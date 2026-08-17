@@ -25,6 +25,9 @@ dependencies {
 
 test {
     useJUnitPlatform()
-    systemProperty 'chromeoptions.prefs', System.getProperty('chromeoptions.prefs', "profile.password_manager_leak_detection=false")
-
+    systemProperty 'selenide.headless', System.getProperty('selenide.headless', 'true')
+    systemProperty 'chromeoptions.args', System.getProperty('chromeoptions.args',
+            '--no-sandbox,--disable-dev-shm-usage,--disable-gpu,--window-size=1920,1080')
+    systemProperty 'chromeoptions.prefs', System.getProperty('chromeoptions.prefs',
+            'profile.password_manager_leak_detection=false')
 }
