@@ -32,9 +32,7 @@ public class WebTest {
     @Test
     void shouldSubmitValidForm() {
         fillAndSubmit("Пётр Иванов-Сидоров", "+79012345678", true);
-        $("[data-test-id=order-success]")
-                .shouldBe(visible)
-                .shouldHave(text("Ваша заявка успешно отправлена!"));
+        $("[data-test-id=order-success]").shouldHave(exactText("  Ваша заявка успешно отправлена! Наш менеджер свяжется с вами в ближайшее время."));
     }
 
     @Test
