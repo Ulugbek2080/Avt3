@@ -1,70 +1,85 @@
 package ru.netology.rest;
 
-import com.codeborne.selenide.SelenideElement;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import io.github.bonigarcia.wdm.WebDriverManager;
+import org.junit.jupiter.api.*;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 
-import static com.codeborne.selenide.Condition.*;
-import static com.codeborne.selenide.Selenide.$;
-import static com.codeborne.selenide.Selenide.$$;
-import static com.codeborne.selenide.Selenide.open;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class WebTest {
 
+    private static WebDriver driver;
+
+    @BeforeAll
+    static void setUp() {
+        ChromeOptions options = new ChromeOptions();
+        options.addArguments("--disable-dev-shm-usage");
+        options.addArguments("--no-sandbox");
+        options.addArguments("--headless");
+        driver = new ChromeDriver(options);
+        WebDriverManager.chromedriver().setup();
+    }
+
+    @AfterAll
+    static void tearDown() {
+        driver.quit();
+    }
+
     @BeforeEach
     void openPage() {
-        open("http://localhost:9999");
+        driver.get("http://localhost:9999");
     }
 
-    private void fillAndSubmit(String name, String phone, boolean agree) {
-        $("[data-test-id=name] input").setValue(name);
-        $("[data-test-id=phone] input").setValue(phone);
-        if (agree) {
-            $("[data-test-id=agreement]").click();
-        }
-        $$("button").findBy(exactText("Продолжить")).click();
+    private void submit(String name, String phone, boolean agree) {
+        driver.findElement(By.cssSelector("[data-test-id=name] input")).sendKeys(name);
+        driver.findElement(By.cssSelector("[data-test-id=phone] input")).sendKeys(phone);
+        if (agree) driver.findElement(By.cssSelector("[data-test-id=agreement]")).click();
+        driver.findElement(By.xpath("//button[normalize-space()='Продолжить']")).click();
     }
 
-    private SelenideElement error(String field) {
-        return $("[data-test-id=" + field + "].input_invalid .input__sub");
+    private String error(String field) {
+        return driver.findElement(
+                By.cssSelector("[data-test-id=" + field + "].input_invalid .input__sub")).getText().trim();
     }
 
     @Test
     void shouldSubmitValidForm() {
-        fillAndSubmit("Русское Имя", "+79012345678", true);
-        $("[data-test-id=order-success]")
-                .shouldBe(visible)
-                .shouldHave(text("Ваша заявка успешно отправлена!"));
+        submit("Русское Имя", "+79012345678", true);
+        assertEquals("Ваша заявка успешно отправлена! Наш менеджер свяжется с вами в ближайшее время.",
+                driver.findElement(By.cssSelector("[data-test-id=order-success]")).getText().trim());
     }
 
     @Test
     void shouldRejectInvalidName() {
-        fillAndSubmit("Ivan Petrov", "+79012345678", true);
-        error("name").shouldHave(text("Допустимы только русские буквы, пробелы и дефисы."));
+        submit("Ivan Petrov", "+79012345678", true);
+        assertEquals("Имя и Фамилия указаные неверно. Допустимы только русские буквы, пробелы и дефисы.",
+                error("name"));
     }
 
     @Test
     void shouldRejectEmptyName() {
-        fillAndSubmit("", "+79012345678", true);
-        error("name").shouldHave(exactText("Поле обязательно для заполнения"));
+        submit("", "+79012345678", true);
+        assertEquals("Поле обязательно для заполнения", error("name"));
     }
 
     @Test
     void shouldRejectInvalidPhone() {
-        fillAndSubmit("Иван Петров", "+7901234567", true);
-        error("phone").shouldHave(text("Должно быть 11 цифр"));
+        submit("Иван Петров", "+7901234567", true);
+        assertEquals("Телефон указан неверно. Должно быть 11 цифр, например, +79012345678.", error("phone"));
     }
 
     @Test
     void shouldRejectEmptyPhone() {
-        fillAndSubmit("Иван Петров", "", true);
-        error("phone").shouldHave(exactText("Поле обязательно для заполнения"));
+        submit("Иван Петров", "", true);
+        assertEquals("Поле обязательно для заполнения", error("phone"));
     }
 
     @Test
     void shouldRejectUncheckedAgreement() {
-        fillAndSubmit("Иван Петров", "+79012345678", false);
-        $("[data-test-id=agreement].input_invalid").shouldBe(visible);
-        $("[data-test-id=order-success]").shouldNotBe(visible);
+        submit("Иван Петров", "+79012345678", false);
+        driver.findElement(By.cssSelector("[data-test-id=agreement].input_invalid"));
     }
 }

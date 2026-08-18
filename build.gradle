@@ -6,7 +6,7 @@ group 'ru.netology'
 version '1.0-SNAPSHOT'
 
 java {
-    sourceCompatibility = 21
+    sourceCompatibility = 11
 }
 compileJava.options.encoding = "UTF-8"
 compileTestJava.options.encoding = "UTF-8"
@@ -19,15 +19,8 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
     testImplementation 'org.seleniumhq.selenium:selenium-java:4.29.0'
     testImplementation 'io.github.bonigarcia:webdrivermanager:6.1.0'
-    testImplementation 'com.codeborne:selenide:7.9.3'
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
 }
 
 test {
     useJUnitPlatform()
-    systemProperty 'selenide.headless', System.getProperty('selenide.headless', 'true')
-    systemProperty 'chromeoptions.args', System.getProperty('chromeoptions.args',
-            '--no-sandbox,--disable-dev-shm-usage,--disable-gpu,--window-size=1920,1080')
-    systemProperty 'chromeoptions.prefs', System.getProperty('chromeoptions.prefs',
-            'profile.password_manager_leak_detection=false')
 }
